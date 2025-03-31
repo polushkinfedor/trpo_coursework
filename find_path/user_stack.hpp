@@ -25,7 +25,7 @@ public:
 		delete this->body;
 	}
 
-	// Changing the allocated memory for the stack
+	// Changing the allocated memory for the dynamic array
 	void resize(size_t n) {
 		if (this->body_len > n) { // When trying to make a size reduction, we throw an exception
 			throw "Resize error: an attempt to reduce the size";
