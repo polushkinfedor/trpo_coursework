@@ -23,12 +23,12 @@ constexpr size_t crawl_procedure_len = 3; // max element of crawl_procedure arra
 /// <param name="solution">current solution</param>
 /// <param name="solution_find">a flag certifying that a solution has been found</param>
 /// <param name="proc_type">type of porecudure (clockwise, counterclockwise, random)</param>
-void dfs_step(const map_type& cur_map, TStack<node>& solution, bool& solution_find, type_procedure proc_type) {
+static void dfs_step(const map_type& cur_map, TStack<node>& solution, bool& solution_find, type_procedure proc_type) {
 	std::vector<sides> crawl_procedure = { up , down , left , right };
 
 #pragma region Rules of procedure
 	if (proc_type == random) { // Random order
-		srand(time(NULL));
+		srand((unsigned int)time(NULL));
 		for (size_t index = 0; index < crawl_procedure_len; ++index) {
 			size_t random_el_index = rand() % (crawl_procedure_len + 1);
 			sides temp_side = crawl_procedure[random_el_index];
@@ -95,7 +95,9 @@ void dfs_step(const map_type& cur_map, TStack<node>& solution, bool& solution_fi
 /// <returns>solving the problem of finding a path</returns>
 TStack<node> dfs(std::filesystem::path map_path, type_procedure proc_type = clockwise) {
 	// Getting a map from a file
-	std::pair<map_type, node> map_parsing_res = map_parsing(map_path);
+	std::ifstream map_stream(map_path);
+	if (not map_stream.is_open()) throw "File is unavailible";
+	std::pair<map_type, node> map_parsing_res = map_parsing(map_stream);
 	map_type cur_map = map_parsing_res.first;
 	node start_node = map_parsing_res.second;
 

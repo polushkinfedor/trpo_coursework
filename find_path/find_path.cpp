@@ -1,23 +1,23 @@
 ﻿#include <iostream>
 #include "dfs.hpp"
+#include "interface.hpp"
 
 int main()
 {
+	menu();
+	/*
 	try {
-		TStack<node> solution = dfs("C:\\Study\\TRPO_CW\\find_path\\find_path\\map.txt");
-		TStack<node> solution_ltor(solution.size());
+		map_type small_map = { {} };
+		TStack<node> solution = dfs({ small_map , {0,0} }, random);
+		solution.invert();
 		while (not solution.empty())
 		{
-			node step = solution.pop();
-			solution_ltor.push(step);
-		}
-		while (not solution_ltor.empty())
-		{
-			std::cout << "(" << solution_ltor.top().x << "," << solution_ltor.top().y << ")\n";
-			solution_ltor.pop();
+			std::cout << "(" << solution.top().x << "," << solution.top().y << ")\n";
+			solution.pop();
 		}
 	}
 	catch (const char e[]) {
 		std::cout << e;
 	}
+	*/
 }
