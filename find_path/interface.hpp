@@ -256,6 +256,7 @@ static void print_manual() {
     std::cout << "   4. Save map to file: Saves the current map to a file.\n";
     std::cout << "   5. Clear map: Clears the current map.\n";
     std::cout << "   6. Change procedure type: Allows you to change the pathfinding algorithm (Clockwise, Counterclockwise, or Random).\n";
+    std::cout << "   p. Print solution to file: Print solution for current map to a file.\n";
     std::cout << "   m. Show manual: Displays this manual.\n";
     std::cout << "   0. Exit: Exits the program.\n\n";
 
