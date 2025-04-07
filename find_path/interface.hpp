@@ -4,10 +4,11 @@
 #include "dfs.hpp"
 
 constexpr int bigM_ASCII = 0x4d;
+constexpr int bigP_ASCII = 0x50;
 constexpr int skip_file = 2;
 #pragma region Signatures
 enum menu_point {
-    zero = 0x30, one, two, three, four, five, six, manual = 0x6d
+    zero = 0x30, one, two, three, four, five, six, manual = 0x6d, print = 0x70
 };
 using enum menu_point;
 
@@ -28,6 +29,7 @@ static void set_color(std::string, int, std::ostream& out = std::cout);
 static std::filesystem::path find_file_menu(const std::filesystem::path& directory);
 static int file_open_menu(std::string filename);
 static void map_load_tf(map_type& exemple);
+static void sln_load_tf(TStack<node>& sln);
 #pragma endregion
 
 //--------------------------- functional program units ---------------------------------
@@ -76,6 +78,7 @@ void menu() {
         std::cout << "To copy map of area to file:       "; set_color("enter -- 4\n", colors::green);
         std::cout << "To clear map of area:              "; set_color("enter -- 5\n", colors::green);
         std::cout << "To change type_procedure:          "; set_color("enter -- 6\n\n", colors::green);
+        std::cout << "To print solution vector:          "; set_color("enter -- p\n", colors::green);
         std::cout << "To open manual:                    "; set_color("enter -- m\n", colors::green);
         std::cout << "To exit "; set_color("enter -- 0\n\n", colors::green);
 
@@ -84,8 +87,9 @@ void menu() {
         bool exit_flag = false;
         while (!exit_flag) {
             user_enter = _getch();
-            // if find 'M' translate to lower register
+            // if find 'M' or 'P' translate to lower register
             user_enter = (user_enter == bigM_ASCII) ? manual : user_enter;
+            user_enter = (user_enter == bigP_ASCII) ? print : user_enter;
             exit_flag = true;
             switch ((menu_point)user_enter) {
             case one:
@@ -104,7 +108,6 @@ void menu() {
                 catch (const char e[]) {
                     std::cout << e;
                 }
-                sln.clear();
                 _getch();
                 break;
             case two:
@@ -146,6 +149,16 @@ void menu() {
                 break;
             case manual:
                 print_manual();
+                break;
+            case print:
+                try {
+                    sln = dfs(start_info, proc_type);
+                    sln.invert();
+                    sln_load_tf(sln);
+                }
+                catch (const char e[]) {
+                    std::cout << e;
+                }
                 break;
             case zero: // exit from func
                 exit_message(end_programm);
@@ -479,6 +492,51 @@ static void map_load_tf(map_type& cur_map) {
 
             if (op_code != skip_file) {
                 print_map(cur_map, {}, file);
+            }
+            file.close();
+            need_exit = true;
+        }
+        else { // If the file name is invalid
+            system("cls");
+            std::cout << "The entered file name is incorrect, make sure it does not contain the following characters:\n"
+                " < >    :    \"    \\    /    |    ?    *\n"
+                "To continue, enter any key";
+            _getch();
+        }
+    }
+}
+
+static void sln_load_tf(TStack<node>& sln) {
+    // Function responsible for unloading data into a file
+    bool need_exit = false;
+    while (not(need_exit)) {
+        std::string file_name;
+        system("cls");
+        std::cout << "Specify the name of the file where you are going to save vector of solution\n";
+        std::cout << "It will be located in the directories: ";
+        set_color(std::filesystem::current_path().string() + "\n", colors::blue);
+        set_color("To go back to the menu -- enter 0\n\n", colors::green);
+        std::cout << "Please enter the file name with file extension: ";
+        std::getline(std::cin, file_name); // Get the file name
+        if (file_name == "0") return; // Special exit code as indicated in the interaction window
+
+        trim(file_name);
+
+        if (check_file_name(file_name)) { // If the file name is valid
+            check_file_exist(file_name); // Get the full name for the file
+
+            int op_code = file_open_menu(file_name);     // How do we want to open the file if it already exists (1 -- continue filling, 2 -- recreate)
+            bool need_load = false;
+
+            std::ofstream file(file_name, std::ios::out);
+
+            if (op_code != skip_file) {
+                set_color("Vector of solution:\n", colors::blue, file);
+                while (not sln.empty())
+                {
+                    file << "(" << sln.top().x << "," << sln.top().y << ")\n";
+                    sln.pop();
+                }
             }
             file.close();
             need_exit = true;
