@@ -87,4 +87,3 @@ inline std::pair<map_type,node> map_parsing (std::istream& map_stream)  {
         throw "the map does not have the possibility of finding a deterministic route";
     return { map_array, start_node }; // return the map and the starting point
 }
-
