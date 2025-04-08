@@ -385,7 +385,7 @@ static std::filesystem::path find_file_menu(const std::filesystem::path& directo
     size_t input_int = 0;
 
     do {
-        std::cout << "Enter the full or partial file name to search for rhymes.\n"
+        std::cout << "Enter the full or partial file name to search map of area.\n"
             "To display all available files from the program folder, enter an empty line[Enter].\n"
             "To exit input /exit\n\n";
 
@@ -401,7 +401,7 @@ static std::filesystem::path find_file_menu(const std::filesystem::path& directo
         }
         else {
             do {
-                std::cout << "Select the file to search for rhymes.\n";
+                std::cout << "Select the file to search map of area.\n";
                 for (size_t i = 0; i != files.size(); ++i) {
                     std::cout << i + 1 << ". " << files[i].filename() << '\n';
                 }
