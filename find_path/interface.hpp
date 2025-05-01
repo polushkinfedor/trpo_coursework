@@ -1,14 +1,17 @@
 #include <iostream>
+#include <ctime>
 #include <conio.h>
 #include <Windows.h>
+#include <random>
 #include "dfs.hpp"
 
-constexpr int bigM_ASCII = 0x4d;
-constexpr int bigP_ASCII = 0x50;
-constexpr int skip_file = 2;
+constexpr short unsigned int bigM_ASCII = 0x4d;
+constexpr short unsigned int bigP_ASCII = 0x50;
+constexpr short unsigned int bigR_ASCII = 0x52;
+constexpr short unsigned int skip_file = 2;
 #pragma region Signatures
 enum menu_point {
-    zero = 0x30, one, two, three, four, five, six, manual = 0x6d, print = 0x70
+    zero = 0x30, one, two, three, four, five, six, manual = 0x6d, print = 0x70, randmap = 0x72
 };
 using enum menu_point;
 
@@ -30,6 +33,7 @@ static std::filesystem::path find_file_menu(const std::filesystem::path& directo
 static int file_open_menu(std::string filename);
 static void map_load_tf(map_type& exemple);
 static void sln_load_tf(TStack<node>& sln);
+static void random_map_generate_menu(std::pair<map_type&, node&> &start_info);
 #pragma endregion
 
 //--------------------------- functional program units ---------------------------------
@@ -37,9 +41,7 @@ static void sln_load_tf(TStack<node>& sln);
 void menu() {
     // Function responsible for user interaction with the program
     bool end_programm = false;
-    map_type current_map = { {START,       AVAILABLE,   AVAILABLE}, 
-                             {UNAVAILABLE, AVAILABLE,   AVAILABLE}, 
-                             {UNAVAILABLE, UNAVAILABLE, END      } };
+    map_type current_map = rand_map_generate((unsigned int)time(NULL)).first;
     node curr_start = { 0, 0 };
 
     // Variables for work with files
@@ -78,6 +80,7 @@ void menu() {
         std::cout << "To copy map of area to file:       "; set_color("enter -- 4\n", colors::green);
         std::cout << "To clear map of area:              "; set_color("enter -- 5\n", colors::green);
         std::cout << "To change type_procedure:          "; set_color("enter -- 6\n\n", colors::green);
+        std::cout << "To create random map:              "; set_color("enter -- r\n", colors::green);
         std::cout << "To print solution vector:          "; set_color("enter -- p\n", colors::green);
         std::cout << "To open manual:                    "; set_color("enter -- m\n", colors::green);
         std::cout << "To exit "; set_color("enter -- 0\n\n", colors::green);
@@ -90,6 +93,7 @@ void menu() {
             // if find 'M' or 'P' translate to lower register
             user_enter = (user_enter == bigM_ASCII) ? manual : user_enter;
             user_enter = (user_enter == bigP_ASCII) ? print : user_enter;
+            user_enter = (user_enter == bigR_ASCII) ? randmap : user_enter;
             exit_flag = true;
             switch ((menu_point)user_enter) {
             case one:
@@ -147,6 +151,9 @@ void menu() {
                 else if (proc_type == counterclockwise) proc_type = random;
                 else if (proc_type == random)           proc_type = clockwise;
                 break;
+            case randmap:
+                random_map_generate_menu(start_info);
+                break;
             case manual:
                 print_manual();
                 break;
@@ -177,10 +184,80 @@ static void print_map(map_type& current_map, TStack<node> sln, std::ostream& out
         out << "CLEAR \n";
     }
     else {
+        bool is_rectangle = true;
+        for (size_t y = 1; y < current_map.size(); ++y) {
+            if (current_map[y].size() != current_map[y - 1].size())
+                is_rectangle = false;
+        }
         for (size_t y = 0; y < current_map.size(); ++y) {
             for (size_t x = 0; x < current_map[y].size(); ++x) {
                 std::string printing_line = " ";
-                printing_line[0] = (char)current_map[y][x];
+                switch (current_map[y][x]) {
+                case AVAILABLE:
+                    printing_line[0] = MapSymbolsMask::av;
+                    break;
+                case START:
+                    printing_line[0] = MapSymbolsMask::st;
+                    break;
+                case END:
+                    printing_line[0] = MapSymbolsMask::ed;
+                    break;
+                case UNAVAILABLE:
+                    if (not is_rectangle) {
+                        printing_line[0] = MapSymbolsMask::unav_all;
+                        break;
+                    }
+                    if (x > 0 and x < current_map[y].size() - 1) {
+                        if (y == 0) {
+                            if (current_map[y][x + 1] == UNAVAILABLE)
+                                printing_line[0] = MapSymbolsMask::unav_all;
+                            else
+                                printing_line[0] = MapSymbolsMask::unav_ver;
+                        }
+
+                        else if (y == current_map.size() - 1) {
+                            if (current_map[y][x + 1] == UNAVAILABLE)
+                                printing_line[0] = MapSymbolsMask::unav_all;
+                            else
+                                printing_line[0] = MapSymbolsMask::unav_ver;
+                        }
+                    }
+                    else printing_line[0] = MapSymbolsMask::unav_ver;
+
+                    if (y > 0) {
+                        if (x == 0 and y != current_map.size() - 1) {
+                            if (current_map[y + 1][x] == UNAVAILABLE)
+                                printing_line[0] = MapSymbolsMask::unav_all;
+                            else
+                                printing_line[0] = MapSymbolsMask::unav_hor;
+                        }
+
+                        else if (x == current_map[y].size() - 1 and y != current_map.size() - 1) {
+                            if (current_map[y - 1][x] == UNAVAILABLE)
+                                printing_line[0] = MapSymbolsMask::unav_all;
+                            else
+                                printing_line[0] = MapSymbolsMask::unav_hor;
+                        }
+                    }
+                    else printing_line[0] = MapSymbolsMask::unav_hor;
+
+                    if ((x > 0 and x < current_map[y].size() - 1) and (y > 0 and y < current_map.size() - 1)) {
+                        if ((current_map[y + 1][x] == UNAVAILABLE or current_map[y - 1][x] == UNAVAILABLE) and
+                            (current_map[y][x + 1] == UNAVAILABLE or current_map[y][x - 1] == UNAVAILABLE)) {
+                            printing_line[0] = MapSymbolsMask::unav_all;
+                        }
+                        else if (current_map[y + 1][x] == UNAVAILABLE or current_map[y - 1][x] == UNAVAILABLE) {
+                            printing_line[0] = MapSymbolsMask::unav_ver;
+                        }
+                        else if (current_map[y][x + 1] == UNAVAILABLE or current_map[y][x - 1] == UNAVAILABLE) {
+                            printing_line[0] = MapSymbolsMask::unav_hor;
+                        }
+                        else {
+                            printing_line[0] = MapSymbolsMask::unav_all;
+                        }
+                    }
+                }
+                
                 if (sln.contain({ x, y })) {
                     set_color(printing_line, colors::green, out);
                 }
@@ -550,4 +627,53 @@ static void sln_load_tf(TStack<node>& sln) {
             _getch();
         }
     }
+}
+
+static void random_map_generate_menu(std::pair<map_type&, node&>& start_info) {
+    int N1 = 0, N2 = 0;
+    unsigned int seed = 0;
+    bool valid_input = false;
+
+    while (!valid_input) {
+        system("cls");
+        std::cout << "Enter map size (N1 N2) or press Enter for default (10 10): ";
+        std::string size_input;
+        std::getline(std::cin, size_input);
+
+        if (size_input.empty()) {
+            N1 = 10;
+            N2 = 10;
+            std::cout << "No input detected. Using default size: 10 x 10\n";
+        }
+        else {
+            std::stringstream ss(size_input);
+            if (!(ss >> N1 >> N2) || N1 <= 0 || N2 <= 0) {
+                std::cout << "Error: Please enter two positive integers separated by space.\n";
+                continue;
+            }
+        }
+
+        std::cout << "Enter seed value or press Enter for default (time-seed): ";
+        std::string seed_input;
+        std::getline(std::cin, seed_input);
+        std::stringstream seed_ss(seed_input);
+
+        if (seed_input.empty()) {
+            std::random_device rd;
+            seed = rd();  // hardware-based random seed
+            std::cout << "No input detected. Using random seed: " << seed << "\n";
+            valid_input = true;
+        }
+        else if (seed_ss >> seed) {
+            valid_input = true;
+        }
+        else {
+            std::cout << "Error: Seed must be a positive integer.\n";
+            // Erase if error
+            std::cin.clear();
+            std::cin.ignore();
+        }
+    }
+    _getch();
+    start_info = rand_map_generate(seed, {N1, N2});
 }
