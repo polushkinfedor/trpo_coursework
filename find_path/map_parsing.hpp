@@ -74,16 +74,20 @@ inline std::pair<map_type,node> map_parsing (std::istream& map_stream)  {
                 el_type map_element;
                 if (curr_line[cur_x] == MapSymbolsMask::unav_all or
                     curr_line[cur_x] == MapSymbolsMask::unav_hor or
-                    curr_line[cur_x] == MapSymbolsMask::unav_ver) {
+                    curr_line[cur_x] == MapSymbolsMask::unav_ver or
+                    (el_type)curr_line[cur_x] == UNAVAILABLE) {
                     map_element = UNAVAILABLE;
                 }
-                else if (curr_line[cur_x] == MapSymbolsMask::av) {
+                else if (curr_line[cur_x] == MapSymbolsMask::av or
+                        (el_type)curr_line[cur_x] == AVAILABLE) {
                     map_element = AVAILABLE;
                 }
-                else if (curr_line[cur_x] == MapSymbolsMask::st) {
+                else if (curr_line[cur_x] == MapSymbolsMask::st or
+                         (el_type)curr_line[cur_x] == START) {
                     map_element = START;
                 }
-                else if (curr_line[cur_x] == MapSymbolsMask::st) {
+                else if (curr_line[cur_x] == MapSymbolsMask::ed or
+                        (el_type)curr_line[cur_x] == END) {
                     map_element = END;
                 }
                 else {

@@ -54,8 +54,8 @@ void menu() {
 
     while (not(end_programm)) {
         system("cls");
-        set_color("You are working with programm, that finding path from S to O, " \
-            "excluding X symbols.\n", colors::white);
+        set_color("You are working with programm, that finding path from S to F, " \
+            "excluding | or _ symbols.\n", colors::white);
         print_map(start_info.first, sln);
         set_color("current type of procedure (clockwise/counterclockwise/random):\n", colors::blue);
         switch (proc_type)
@@ -319,7 +319,7 @@ static void print_manual() {
 
     std::cout << "1. Introduction\n";
     std::cout << "   This program implements a pathfinding algorithm, where the goal is to find a way\n"
-                 "   from a start point 'S' to an end point 'O', while avoiding obstacles represented by 'X'.\n\n";
+                 "   from a start point 'S' to an end point 'F', while avoiding obstacles represented by '|' or '_'.\n\n";
 
     std::cout << "2. Controls:\n";
     std::cout << "   - You can navigate through the map and choose options by entering corresponding numbers.\n";
@@ -333,14 +333,15 @@ static void print_manual() {
     std::cout << "   4. Save map to file: Saves the current map to a file.\n";
     std::cout << "   5. Clear map: Clears the current map.\n";
     std::cout << "   6. Change procedure type: Allows you to change the pathfinding algorithm (Clockwise, Counterclockwise, or Random).\n";
+    std::cout << "   r. Randomize map: Create map with user or default(10X10, time-seed) size and seed.\n";
     std::cout << "   p. Print solution to file: Print solution for current map to a file.\n";
     std::cout << "   m. Show manual: Displays this manual.\n";
     std::cout << "   0. Exit: Exits the program.\n\n";
 
     std::cout << "4. How to read the map:\n";
     std::cout << "   - 'S' is the start point.\n";
-    std::cout << "   - 'O' is the endpoint.\n";
-    std::cout << "   - 'X' represents obstacles (impassable areas).\n";
+    std::cout << "   - 'F' is the endpoint.\n";
+    std::cout << "   - '|' or '_' represents obstacles (impassable areas).\n";
     std::cout << "   - '.' represents passable areas.\n\n";
 
     set_color("Press any key to return to the menu.", green);
